@@ -1,0 +1,25 @@
+# Single Web Service = Bot + HTML shop (combined via app.py)
+services:
+  - type: web
+    name: kiki-shop
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.0"
+      - key: BOT_TOKEN
+        sync: false
+      - key: OWNER_ID
+        value: "7308292609"
+      - key: LEO_DB_PATH
+        value: kiki_shop.db
+      - key: COOKIE_FILE
+        value: cookies.json
+      - key: SMILE_PRICES_FILE
+        value: smile_prices.json
+      - key: WEB_SECRET_KEY
+        generateValue: true
+      - key: ADMIN_USERNAME
+        value: kiki20251
