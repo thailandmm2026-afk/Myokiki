@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Ki Ki Shop – Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+</head>
+<body class="auth-body">
+  <div class="auth-card">
+    <div class="brand">
+      <div class="logo">💎</div>
+      <h1>Ki Ki Shop</h1>
+      <p class="subtitle">MLBB Diamond · Smile Auto Top-up · Web</p>
+    </div>
+
+    <div id="alert" class="alert hidden"></div>
+
+    <div class="auth-tabs">
+      <button type="button" class="auth-tab active" id="tabLogin">Login</button>
+      <button type="button" class="auth-tab" id="tabRegister">အကောင့်ဖွင့်မည်</button>
+    </div>
+
+    <form id="loginForm" autocomplete="on">
+      <label>
+        <span>Telegram User ID</span>
+        <input type="text" name="user_id" id="user_id" inputmode="numeric" placeholder="ဥပမာ 7308292609" required />
+      </label>
+      <label id="nameLabel" class="hidden">
+        <span>နာမည် (optional)</span>
+        <input type="text" name="name" id="display_name" placeholder="သင့်နာမည်" maxlength="64" />
+      </label>
+      <label>
+        <span>Web PIN (အနည်းဆုံး ၄ လုံး)</span>
+        <input type="password" name="pin" id="pin" minlength="4" placeholder="PIN" required />
+      </label>
+      <button type="submit" class="btn primary" id="btnSubmit">Login</button>
+    </form>
+
+    <div class="help-box">
+      <h3>📌 ဘယ်လို သုံးမလဲ?</h3>
+      <ol>
+        <li><b>အကောင့်ဖွင့်မည်</b> နှိပ်ပါ</li>
+        <li>Telegram User ID ထည့်ပါ (@userinfobot မှ ယူနိုင်သည်)</li>
+        <li>PIN အသစ် သတ်မှတ်ပါ (၄ လုံး+)</li>
+        <li>နောက်ပိုင်း Login ဖြင့် ဝင်ပါ</li>
+      </ol>
+      <p>User ID ရှာရန် Telegram မှာ <code>@userinfobot</code> ကို ဖွင့်ပါ။</p>
+      <p>Admin: <a href="https://t.me/{{ admin_username }}" target="_blank">@{{ admin_username }}</a></p>
+    </div>
+  </div>
+
+  <style>
+    .auth-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .auth-tab {
+      flex: 1; padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+      background: transparent; color: #9aa6c0; font-weight: 600; cursor: pointer;
+    }
+    .auth-tab.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+  </style>
+  <script>
+    let mode = 'login';
+    const tabLogin = document.getElementById('tabLogin');
+    const tabRegister = document.getElementById('tabRegister');
+    const btnSubmit = document.getElementById('btnSubmit');
+    const nameLabel = document.getElementById('nameLabel');
+    const alertEl = document.getElementById('alert');
+
+    function showAlert(msg, type) {
+      alertEl.className = 'alert ' + (type || 'info');
+      alertEl.textContent = msg;
+      alertEl.classList.remove('hidden');
+    }
+
+    tabLogin.onclick = () => {
+      mode = 'login';
+      tabLogin.classList.add('active');
+      tabRegister.classList.remove('active');
+      btnSubmit.textContent = 'Login';
+      nameLabel.classList.add('hidden');
+      alertEl.classList.add('hidden');
+    };
+    tabRegister.onclick = () => {
+      mode = 'register';
+      tabRegister.classList.add('active');
+      tabLogin.classList.remove('active');
+      btnSubmit.textContent = 'အကောင့်ဖွင့်မည်';
+      nameLabel.classList.remove('hidden');
+      alertEl.classList.add('hidden');
+    };
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      btnSubmit.disabled = true;
+      const oldText = btnSubmit.textContent;
+      btnSubmit.textContent = 'စောင့်ပါ...';
+      const body = {
+        user_id: document.getElementById('user_id').value.trim(),
+        pin: document.getElementById('pin').value,
+        name: document.getElementById('display_name').value.trim()
+      };
+      try {
+        const url = mode === 'register' ? '/api/register' : '/api/login';
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (data.ok) {
+          window.location.href = '/shop';
+        } else {
+          showAlert(data.error || 'မအောင်မြင်ပါ', 'error');
+          if (data.need_register) {
+            tabRegister.click();
+          }
+        }
+      } catch (err) {
+        showAlert('Network error – စာမျက်နှာ ပြန်ဖွင့်ကြည့်ပါ', 'error');
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = oldText;
+      }
+    });
+  </script>
+</body>
+</html>
